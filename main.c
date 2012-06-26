@@ -35,6 +35,7 @@
 
 int main() {
   systemReset(); // peripherals but not PC
+
   setupCLK();
   setupLED();
   setupUSB();
