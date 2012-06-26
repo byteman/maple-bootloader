@@ -69,50 +69,124 @@ void strobePin(u32 bank, u8 pin, u8 count, u32 rate) {
 
 void systemReset(void) {
   SET_REG(RCC_CR, GET_REG(RCC_CR)     | 0x00000001);
-  SET_REG(RCC_CFGR, GET_REG(RCC_CFGR) & 0xF8FF0000);
+  SET_REG(RCC_CFGR, GET_REG(RCC_CFGR) & 0xF0FF0000);
   SET_REG(RCC_CR, GET_REG(RCC_CR)     & 0xFEF6FFFF);
   SET_REG(RCC_CR, GET_REG(RCC_CR)     & 0xFFFBFFFF);
   SET_REG(RCC_CFGR, GET_REG(RCC_CFGR) & 0xFF80FFFF);
-
-  SET_REG(RCC_CIR, 0x00000000);  /* disable all RCC interrupts */
+  
+  /* Reset PLL2ON and PLL3ON bits */
+  SET_REG(RCC_CR,GET_REG(RCC_CR) & 0xEBFFFFFF);
+  /* Disable all interrupts and clear pending bits	*/	  
+  SET_REG(RCC_CIR, 0x00FF0000);  /* disable all RCC interrupts */
+  /* Reset CFGR2 register */
+  SET_REG(RCC_CFGR2,0x00000000);
 }
-
 void setupCLK (void) {
-  /* enable HSE */
-  SET_REG(RCC_CR,GET_REG(RCC_CR) | 0x00010001);
-  while ((GET_REG(RCC_CR) & 0x00020000) == 0); /* for it to come on */
+	
+	vs32 StartUpCounter = 0, HSEStatus = 0;
+/* SYSCLK, HCLK, PCLK2 and PCLK1 configuration ---------------------------*/	
+/* Enable HSE */	
+  	SET_REG(RCC_CR,GET_REG(RCC_CR) | RCC_CR_HSEON);
+	
+	do
+	{
+		HSEStatus = RCC->CR & RCC_CR_HSERDY;
+		StartUpCounter++;  
+	} while((HSEStatus == 0) && (StartUpCounter != HSEStartUp_TimeOut));
+	
+	if ((GET_REG(RCC_CR) & RCC_CR_HSERDY) != RESET)
+	{
+	  HSEStatus = (u32)0x01;
+	}
+	else
+	{
+	  HSEStatus = (u32)0x00;
+	}  
+	if (HSEStatus == (u32)0x01)
+	{
+	   /* Enable Prefetch Buffer */
+	   
+	   SET_REG(FLASH_ACR, GET_REG(FLASH_ACR) | FLASH_ACR_PRFTBE);
+	
+	   /* Flash 2 wait state */
+	   
+	   SET_REG(FLASH_ACR, GET_REG(FLASH_ACR) & (u32)((u32)~FLASH_ACR_LATENCY);
+	   SET_REG(FLASH_ACR, GET_REG(FLASH_ACR) | FLASH_ACR_LATENCY_2);
 
-  /* enable flash prefetch buffer */
-  SET_REG(FLASH_ACR, 0x00000012);
+		
+		/* HCLK = SYSCLK */
+	   SET_REG(RCC_CFGR,GET_REG(RCC_CFGR)|RCC_CFGR_HPRE_DIV1);
+		 
+	   /* PCLK2 = HCLK */	   
+	   SET_REG(RCC_CFGR,GET_REG(RCC_CFGR)|RCC_CFGR_PPRE2_DIV1);
+	   
+	   /* PCLK1 = HCLK */
+	   
+	   SET_REG(RCC_CFGR,GET_REG(RCC_CFGR)|RCC_CFGR_PPRE1_DIV2);
 
-  /* Configure PLL */
-  SET_REG(RCC_CFGR,GET_REG(RCC_CFGR) | 0x001D0400);  /* pll=72Mhz,APB1=36Mhz,AHB=72Mhz */
-  SET_REG(RCC_CR,GET_REG(RCC_CR)     | 0x01000000);  /* enable the pll */
-  while ((GET_REG(RCC_CR) & 0x03000000) == 0);         /* wait for it to come on */
+	   
+	   SET_REG(RCC_CFGR2,GET_REG(RCC_CFGR2) & (u32)~(RCC_CFGR2_PREDIV2 | RCC_CFGR2_PLL2MUL |
+								 RCC_CFGR2_PREDIV1 | RCC_CFGR2_PREDIV1SRC));
+	   SET_REG(RCC_CFGR2,GET_REG(RCC_CFGR2) | (u32)(RCC_CFGR2_PREDIV2_DIV5 | RCC_CFGR2_PLL2MUL8 |
+								RCC_CFGR2_PREDIV1SRC_PLL2 | RCC_CFGR2_PREDIV1_DIV5));
+	   
+	   /* Enable PLL2 */
+	   
+	   SET_REG(RCC_CR,GET_REG(RCC_CR) | RCC_CR_PLL2ON);
+	   /* Wait till PLL2 is ready */
+	   while((GET_REG(RCC_CR) & RCC_CR_PLL2RDY) == 0)
+	   {
+	   }
+	   
+	   
+	   /* PLL configuration: PLLCLK = PREDIV1 * 9 = 72 MHz */ 
 
-  /* Set SYSCLK as PLL */
-  SET_REG(RCC_CFGR,GET_REG(RCC_CFGR) | 0x00000002);
-  while ((GET_REG(RCC_CFGR) & 0x00000008) == 0); /* wait for it to come on */
+	   
+	   SET_REG(RCC_CFGR,GET_REG(RCC_CFGR) & (u32)~(RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLSRC | RCC_CFGR_PLLMULL));
+	   SET_REG(RCC_CFGR,GET_REG(RCC_CFGR) | (u32)(RCC_CFGR_PLLXTPRE_PREDIV1 | RCC_CFGR_PLLSRC_PREDIV1 | RCC_CFGR_PLLMULL9));
+
+		/* Enable PLL */
+
+		SET_REG(RCC_CR,GET_REG(RCC_CR) | RCC_CR_PLLON);
+		
+		/* Wait till PLL is ready */
+		while((GET_REG(RCC_CR) & RCC_CR_PLLRDY) == 0)
+		{
+		}
+		
+		/* Select PLL as system clock source */
+		SET_REG(RCC_CFGR,GET_REG(RCC_CFGR) &  (u32)((u32)~(RCC_CFGR_SW));
+		SET_REG(RCC_CFGR,GET_REG(RCC_CFGR) |  (u32)RCC_CFGR_SW_PLL);
+		 
+		
+		/* Wait till PLL is used as system clock source */
+		while ((GET_REG(RCC_CFGR) & (u32)RCC_CFGR_SWS) != (u32)0x08)
+		{
+		}
+	}
+	else{
+
+	}
 }
 
 void setupLED (void) {
   // todo, swap out hardcoded pin/bank with macro
   u32 rwmVal; /* read-write-modify place holder var */
 
-  /* Setup APB2 (GPIOA) */
+  /* Setup APB2 (GPIOE) */
   rwmVal =  GET_REG(RCC_APB2ENR);
-  rwmVal |= 0x00000004;
+  rwmVal |= 0x00000040;
   SET_REG(RCC_APB2ENR,rwmVal);
 
   /* Setup GPIOA Pin 5 as PP Out */
-  SET_REG(GPIO_CRL(GPIOA), 0x00100000);
+  SET_REG(GPIO_CRL(GPIOE), 0x00100000);
 
-  rwmVal =  GET_REG(GPIO_CRL(GPIOA));
+  rwmVal =  GET_REG(GPIO_CRL(GPIOE));
   rwmVal &= 0xFF0FFFFF;
   rwmVal |= 0x00100000;
-  SET_REG(GPIO_CRL(GPIOA),rwmVal);
+  SET_REG(GPIO_CRL(GPIOE),rwmVal);
 
-  setPin(GPIOA,5);
+  setPin(GPIOE,2);
 }
 
 void setupBUTTON (void) {

@@ -38,6 +38,15 @@ int main() {
 
   setupCLK();
   setupLED();
+  while(1){
+	int i = 0;
+	resetPin(GPIOE,2);
+	for(i =0 ; i < 10000; i++)
+		{}
+	setPin(GPIOE,2);
+
+	
+  }
   setupUSB();
   setupBUTTON();
   setupFLASH();
