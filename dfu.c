@@ -44,7 +44,7 @@ u8 recvBuffer[wTransferSize];
 u32 userFirmwareLen = 0;
 u16 thisBlockLen = 0;
 
-
+ 
 PLOT code_copy_lock;
 
 /* todo: force dfu globals to be singleton to avoid re-inits? */
