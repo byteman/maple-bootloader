@@ -40,10 +40,10 @@ int main() {
   setupLED();
   while(1){
 	int i = 0;
-	resetPin(GPIOE,2);
-	for(i =0 ; i < 10000; i++)
+	resetPin(GPIOE,3);
+	for(i =0 ; i < 100000; i++)
 		{}
-	setPin(GPIOE,2);
+	setPin(GPIOE,3);
 
 	
   }

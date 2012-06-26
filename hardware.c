@@ -90,7 +90,7 @@ void setupCLK (void) {
 	
 	do
 	{
-		HSEStatus = RCC->CR & RCC_CR_HSERDY;
+		HSEStatus = GET_REG(RCC_CR) & RCC_CR_HSERDY;
 		StartUpCounter++;  
 	} while((HSEStatus == 0) && (StartUpCounter != HSEStartUp_TimeOut));
 	
@@ -110,7 +110,7 @@ void setupCLK (void) {
 	
 	   /* Flash 2 wait state */
 	   
-	   SET_REG(FLASH_ACR, GET_REG(FLASH_ACR) & (u32)((u32)~FLASH_ACR_LATENCY);
+	   SET_REG(FLASH_ACR, GET_REG(FLASH_ACR) & (u32)((u32)~FLASH_ACR_LATENCY));
 	   SET_REG(FLASH_ACR, GET_REG(FLASH_ACR) | FLASH_ACR_LATENCY_2);
 
 		
@@ -155,7 +155,7 @@ void setupCLK (void) {
 		}
 		
 		/* Select PLL as system clock source */
-		SET_REG(RCC_CFGR,GET_REG(RCC_CFGR) &  (u32)((u32)~(RCC_CFGR_SW));
+		SET_REG(RCC_CFGR,GET_REG(RCC_CFGR) &  (u32)((u32)~(RCC_CFGR_SW)));
 		SET_REG(RCC_CFGR,GET_REG(RCC_CFGR) |  (u32)RCC_CFGR_SW_PLL);
 		 
 		
@@ -186,7 +186,7 @@ void setupLED (void) {
   rwmVal |= 0x00100000;
   SET_REG(GPIO_CRL(GPIOE),rwmVal);
 
-  setPin(GPIOE,2);
+  setPin(GPIOE,3);
 }
 
 void setupBUTTON (void) {

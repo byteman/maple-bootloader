@@ -44,10 +44,8 @@
 #define RCC_AHBENR  (RCC + 0x14)
 #define RCC_APB2ENR (RCC + 0x18)
 #define RCC_APB1ENR (RCC + 0x1C)
-#ifdef STM32F10X_CL  
-  #define RCC_AHBRSTR 	(RCC + 0x28)
-  #define RCC_CFGR2		(RCC + 0x2C)
-#endif /* STM32F10X_CL */ 
+#define RCC_AHBRSTR 	(RCC + 0x28)
+#define RCC_CFGR2		(RCC + 0x2C)
 
 #define FLASH_ACR     (FLASH + 0x00)
 #define FLASH_KEYR    (FLASH + 0x04)
