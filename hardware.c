@@ -179,14 +179,14 @@ void setupLED (void) {
   SET_REG(RCC_APB2ENR,rwmVal);
 
   /* Setup GPIOA Pin 5 as PP Out */
-  SET_REG(GPIO_CRL(GPIOE), 0x00100000);
+  SET_REG(GPIO_CRL(GPIOE), 0x00000100);
 
   rwmVal =  GET_REG(GPIO_CRL(GPIOE));
-  rwmVal &= 0xFF0FFFFF;
-  rwmVal |= 0x00100000;
+  rwmVal &= 0xFFFFF0FF;
+  rwmVal |= 0x00000100;
   SET_REG(GPIO_CRL(GPIOE),rwmVal);
 
-  setPin(GPIOE,3);
+  setPin(GPIOE,2);
 }
 
 void setupBUTTON (void) {

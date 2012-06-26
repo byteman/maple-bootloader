@@ -33,6 +33,10 @@
 
 #include "common.h"
 
+void delay(int n)
+{
+   while(n--);
+}
 int main() {
   systemReset(); // peripherals but not PC
 
@@ -40,10 +44,11 @@ int main() {
   setupLED();
   while(1){
 	int i = 0;
-	resetPin(GPIOE,3);
-	for(i =0 ; i < 100000; i++)
-		{}
-	setPin(GPIOE,3);
+	delay(0x600000);
+	resetPin(GPIOE,2);
+	delay(0x600000);
+	//delay(10000);
+	setPin(GPIOE,2);
 
 	
   }
